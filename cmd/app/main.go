@@ -86,7 +86,7 @@ func personMenu() {
 		fmt.Println("\n--- PERSON CRUD MENU ---")
 		fmt.Println("1. Create Person")
 		fmt.Println("2. Read Person by ID")
-		fmt.Println("3. Update Person") // Nome do menu atualizado
+		fmt.Println("3. Update Person")
 		fmt.Println("4. Delete Person")
 		fmt.Println("5. List All People")
 		fmt.Println("0. Back to Main Menu")
@@ -196,7 +196,8 @@ func readPersonHandler() {
 	fmt.Printf("Birth Date: %s\n", person.BirthDate.Format("2006-01-02"))
 	fmt.Printf("Addresses (%d):\n", len(person.Addresses))
 	for _, addr := range person.Addresses {
-		fmt.Printf("-> ID %d: %s, %s - %s/%s\n", addr.ID, addr.Street, addr.City, addr.State, addr.ZipCode)
+		fmt.Printf("		ID %d: %s, %s (%s). %s - %s (ZipCode: %s)\n",
+			addr.ID, addr.Street, addr.Number, addr.Complement, addr.City, addr.State, addr.ZipCode)
 	}
 }
 
