@@ -1,3 +1,4 @@
+// Package main is the entry point of the application.
 package main
 
 import (
@@ -17,25 +18,36 @@ import (
 	"gorm.io/gorm"
 )
 
+// personService is an instance of the PersonService, which contains the business logic for person and address operations.
 var personService services.PersonService
+
+// reader is a buffered reader for reading user input from the console.
 var reader *bufio.Reader
 
+// main is the application's entry point.
+// It initializes the database connection, runs schema migrations, and starts the main application loop.
 func main() {
+	// Disables timestamp prefixes in log messages.
 	log.SetFlags(0)
+	// Initializes the buffered reader for user input.
 	reader = bufio.NewReader(os.Stdin)
 
+	// Connects to the database. If the connection fails, the application exits.
 	if err := database.Connect(); err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
+	// AutoMigrate automatically creates or updates the database schema for the Person and Address models.
 	if err := database.DB.AutoMigrate(&models.Person{}, &models.Address{}); err != nil {
 		log.Fatalf("Failed to run AutoMigrate: %v", err)
 	}
 
+	// Initializes the personService with its dependencies.
 	personService = services.PersonService{
 		PersonRepo:  repositories.PersonRepository{},
 		AddressRepo: repositories.AddressRepository{},
 	}
 
+	// Starts the main application loop, which displays the main menu and handles user input.
 	for {
 		displayMainMenu()
 		input, _ := reader.ReadString('\n')
@@ -55,12 +67,15 @@ func main() {
 	}
 }
 
+// readInput displays a prompt and reads a line of text from the user.
 func readInput(prompt string) string {
 	fmt.Printf("%s: ", prompt)
 	input, _ := reader.ReadString('\n')
 	return strings.TrimSpace(input)
 }
 
+// readID displays a prompt and reads a numeric ID from the user.
+// It returns the ID as a uint and a boolean indicating if the conversion was successful.
 func readID(prompt string) (uint, bool) {
 	idStr := readInput(prompt)
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -71,6 +86,7 @@ func readID(prompt string) (uint, bool) {
 	return uint(id), true
 }
 
+// displayMainMenu shows the main menu options to the user.
 func displayMainMenu() {
 	fmt.Println("\n==================================")
 	fmt.Println("         MAIN MENU")
@@ -81,6 +97,7 @@ func displayMainMenu() {
 	fmt.Print("Choose an option: ")
 }
 
+// personMenu displays the menu for person-related CRUD operations and handles user input.
 func personMenu() {
 	for {
 		fmt.Println("\n--- PERSON CRUD MENU ---")
@@ -114,6 +131,7 @@ func personMenu() {
 	}
 }
 
+// createPersonHandler handles the creation of a new person and their associated addresses.
 func createPersonHandler() {
 	fmt.Println("\n--- Create New Person ---")
 
@@ -175,6 +193,7 @@ func createPersonHandler() {
 	fmt.Printf("Person created successfully! ID: %d, Addresses registered: %d\n", newPerson.ID, len(newPerson.Addresses))
 }
 
+// readPersonHandler handles reading a person's details by their ID.
 func readPersonHandler() {
 	id, ok := readID("Enter Person ID")
 	if !ok {
@@ -201,6 +220,7 @@ func readPersonHandler() {
 	}
 }
 
+// updatePersonHandler handles updating a person's details.
 func updatePersonHandler() {
 	fmt.Println("\n--- Update Person ---")
 	id, ok := readID("Enter Person ID to update")
@@ -263,6 +283,7 @@ func updatePersonHandler() {
 	fmt.Printf("Person ID %d updated successfully.\n", person.ID)
 }
 
+// deletePersonHandler handles deleting a person by their ID.
 func deletePersonHandler() {
 	id, ok := readID("Enter Person ID to delete")
 	if !ok {
@@ -277,6 +298,7 @@ func deletePersonHandler() {
 	fmt.Printf("Person ID %d deleted successfully (and addresses via CASCADE).\n", id)
 }
 
+// listAllPeopleHandler lists all people in the database.
 func listAllPeopleHandler() {
 	fmt.Println("\n--- List All People ---")
 	people, err := personService.GetAllPeople()
@@ -296,6 +318,7 @@ func listAllPeopleHandler() {
 	}
 }
 
+// addressMenu displays the menu for address-related CRUD operations and handles user input.
 func addressMenu() {
 	for {
 		fmt.Println("\n--- ADDRESS CRUD MENU ---")
@@ -329,6 +352,7 @@ func addressMenu() {
 	}
 }
 
+// addAddressHandler handles adding a new address to an existing person.
 func addAddressHandler() {
 	fmt.Println("\n--- Add New Address ---")
 	personID, ok := readID("Enter Person ID to link this address")
@@ -366,6 +390,7 @@ func addAddressHandler() {
 	fmt.Printf("Address created successfully! ID: %d, linked to Person ID: %d\n", newAddress.ID, personID)
 }
 
+// readAddressHandler handles reading an address's details by its ID.
 func readAddressHandler() {
 	id, ok := readID("Enter Address ID")
 	if !ok {
@@ -388,6 +413,7 @@ func readAddressHandler() {
 	fmt.Printf("-> ZipCode: %s\n", address.ZipCode)
 }
 
+// updateAddressHandler handles updating an address's details.
 func updateAddressHandler() {
 	id, ok := readID("Enter Address ID to update")
 	if !ok {
@@ -448,6 +474,7 @@ func updateAddressHandler() {
 	fmt.Printf("Address ID %d updated successfully.\n", address.ID)
 }
 
+// deleteAddressHandler handles deleting an address by its ID.
 func deleteAddressHandler() {
 	id, ok := readID("Enter Address ID to delete")
 	if !ok {
@@ -462,6 +489,7 @@ func deleteAddressHandler() {
 	fmt.Printf("Address ID %d deleted successfully.\n", id)
 }
 
+// listAddressesByPersonHandler lists all addresses associated with a specific person.
 func listAddressesByPersonHandler() {
 	personID, ok := readID("Enter Person ID to list addresses")
 	if !ok {
